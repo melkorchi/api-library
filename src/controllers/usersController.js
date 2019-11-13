@@ -116,6 +116,7 @@ exports.removeAllUsers = async(req, res) => {
 
 exports.login = async(req, res) => {
     try {
+        console.log(req.body);
         let user = await Users.findOne({ email: req.body.email }).exec();
 
         if (!user) sendJson(res, 400, "User doesn't exist");
