@@ -2,9 +2,8 @@
     "name": "library",
     "version": "1.0.0",
     "description": "",
-    "main": "app.js",
+    "main": "src/app.js",
     "scripts": {
-        "start": "pm2 kill && pm2 start src/app.js --watch",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "Mek",
