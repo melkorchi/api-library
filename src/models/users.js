@@ -2,7 +2,9 @@ const mongoose = require("mongoose");
 const bcrypt = require("mongoose-bcrypt");
 const stringQuery = require("mongoose-string-query");
 const autoIncrement = require('mongoose-auto-increment');
-const connection = mongoose.createConnection("mongodb://localhost:27017/library");
+// const connection = mongoose.createConnection("mongodb://localhost:27017/library");
+const env = require("../environnement");
+const connection = mongoose.createConnection(env.bdd.mongo.url);
 
 autoIncrement.initialize(connection);
 
