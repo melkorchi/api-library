@@ -24,6 +24,7 @@ exports.createUser = async(req, res) => {
             });
         console.log(user)
         await user.save();
+        console.log(user);
         const token = await user.generateAuthToken();
         console.log('token', token)
             // Envoi de mail
