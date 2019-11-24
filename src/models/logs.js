@@ -1,9 +1,7 @@
 const mongoose = require("mongoose");
 const stringQuery = require("mongoose-string-query");
 const autoIncrement = require('mongoose-auto-increment');
-// const connection = mongoose.createConnection("mongodb://localhost:27017/library");
-const env = require("../environnement");
-const connection = mongoose.createConnection(env.bdd.mongo.url);
+const connection = mongoose.createConnection("mongodb://localhost:27017/library", { useNewUrlParser: true, useUnifiedTopology: true });
 
 autoIncrement.initialize(connection);
 
@@ -13,17 +11,17 @@ let LogsSchema = new mongoose.Schema({
         type: String,
         lowercase: true,
         required: true,
-        index: true,
-        unique: true
+        index: true
+            // unique: true
     },
     location: {
         latitude: {
             type: Number,
-            required: true
+            required: false
         },
         longitude: {
             type: Number,
-            required: true
+            required: false
         }
     },
     userId: {
@@ -41,6 +39,7 @@ let LogsSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+LogsSchema.plugin(stringQuery);
 LogsSchema.plugin(autoIncrement.plugin, {
     model: 'Log',
     field: 'id',

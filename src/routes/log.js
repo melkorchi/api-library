@@ -10,5 +10,10 @@ router.delete('/delete/:id', logsController.removeLog);
 router.delete('/delete', logsController.removeAllLogs);
 
 router.get('/search', logsController.search);
+router.get('/search2', logsController.searchLogs);
+
+// Reporting
+router.get('/getLogsGroupByUserId', logsController.getLogsGroupByUserId);
+
 
 module.exports = router;

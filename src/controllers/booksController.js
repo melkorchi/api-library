@@ -1,22 +1,64 @@
 const Books = require('../models/books');
 const { validationResult } = require('express-validator');
+const qs = require('qs');
+const moment = require('moment');
+
+Date.prototype.addDays = function(days) {
+    var date = new Date(this.valueOf());
+    date.setDate(date.getDate() + days);
+    return date;
+}
+
+if (!Date.prototype.adjustDate) {
+    Date.prototype.adjustDate = function(days) {
+        var date;
+
+        days = days || 0;
+
+        if (days === 0) {
+            date = new Date(this.getTime());
+        } else if (days > 0) {
+            date = new Date(this.getTime());
+
+            date.setDate(date.getDate() + days);
+        } else {
+            date = new Date(
+                this.getFullYear(),
+                this.getMonth(),
+                this.getDate() - Math.abs(days),
+                this.getHours(),
+                this.getMinutes(),
+                this.getSeconds(),
+                this.getMilliseconds()
+            );
+        }
+
+        this.setTime(date.getTime());
+
+        return this;
+    };
+}
+
+
 
 // Create a book
 exports.createBook = async(req, res) => {
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return sendJson(res, 422, errors.array());
     }
 
-    const links = [
-        { name: "Amazon1", link: "www.amazon1.fr" },
-        { name: "Amazon2", link: "www.amazon2.fr" },
-    ];
+    let links = req.body.links;
+    console.log('links', links)
+    links = qs.parse(links);
+    console.log('links', links.links)
 
     const newBook = {
         title: req.body.title,
         author: req.body.author,
         description: req.body.description,
+        urlImage: req.body.urlImage,
         publishedDate: req.body.publishedDate,
         rating: {
             rate: req.body.rate,
@@ -24,7 +66,7 @@ exports.createBook = async(req, res) => {
             userId: req.body.userId
                 // commentPublicationDate: new Date()
         },
-        links: links
+        links: links.links
     }
 
     if (req.body.comment) newBook.rating.commentPublicationDate = new Date();
@@ -72,24 +114,33 @@ exports.updateBook = async(req, res) => {
         return sendJson(res, 422, errors.array());
     }
 
-    const links = [
-        { name: "Amazon3", link: "www.amazon3.fr" },
-        { name: "Amazon4", link: "www.amazon4.fr" },
-    ];
+    let links = req.body.links;
+    console.log('body', req.body)
+    links = qs.parse(links);
+    console.log('links', links.links)
 
-    const updateBook = {
+    let updateBook = {
         title: req.body.title,
         author: req.body.author,
         description: req.body.description,
         publishedDate: req.body.publishedDate,
-        // rating: {
-        //     rate: req.body.rate,
-        //     comment: req.body.comment,
-        //     userId: req.body.userId,
-        //     commentPublicationDate: new Date()
-        // },
-        links: links
+        urlImage: req.body.urlImage,
+        // publishedDate: new Date(req.body.publishedDate),
+        rating: {
+            rate: req.body.rate,
+            comment: req.body.comment,
+            userId: req.body.userId,
+            commentPublicationDate: req.body.oldCommentDate
+        },
+        links: links.links
     }
+
+    if (req.body.isNewComment == 'true') updateBook.rating.commentPublicationDate = new Date();
+
+
+
+    // console.log('idBooksss', req.params.id)
+    // console.log('updateBook', updateBook)
 
     try {
         const book = await Books.findOneAndUpdate({ id: req.params.id }, updateBook, { new: true });
@@ -125,6 +176,62 @@ exports.searchBooks = (req, res) => {
     Books.apiQuery(req.query).select("id title author publishedDate description rating links")
         .then(books => res.status(200).json(books))
         .catch(err => res.status(500).json(err));
+}
+
+exports.searchBooks2 = async(req, res) => {
+    const params = qs.parse(req.query);
+    // const params = req.query;
+
+    const title = params.title;
+    const author = params.author;
+    let publishedDate = params.publishedDate;
+    let books = [];
+    const changeDateFormat = (inputDate) => { // expects d/m/y
+        var splitDate = inputDate.split('/');
+        if (splitDate.count == 0) {
+            return null;
+        }
+
+        var year = splitDate[2];
+        var month = splitDate[1];
+        var day = splitDate[0];
+
+        return month + '/' + day + '/' + year;
+        // return year + '/' + month + '/' + day;
+    }
+
+    // console.log(title, author, publishedDate);
+
+    try {
+        if (!title) {
+            books = await Books.find();
+        } else {
+            if (moment(changeDateFormat(publishedDate)).isValid()) {
+                // const date = moment(changeDateFormat(publishedDate)).utc().format("MM/DD/YYYY");
+                const date = moment(changeDateFormat(publishedDate)).utc().format("MM/DD/YYYY");
+                console.log('moment', date);
+                console.log(changeDateFormat(publishedDate));
+                console.log('publishedDate Date', new Date(date));
+                console.log('publishedDate Date +1', new Date(date).addDays(1));
+                console.log('publishedDate Date +2', new Date(date).addDays(2));
+
+                books = await Books.find({
+                    "publishedDate": {
+                        "$gte": new Date(date),
+                        "$lt": new Date(date).addDays(2)
+                    }
+                });
+                // books = await Books.find({ "publishedDate": new Date(publishedDate) })
+            } else {
+                console.log('string');
+                books = await Books.find({ $or: [{ title: title }, { author: author }] });
+            }
+        }
+
+        return (books.length < 1) ? sendJson(res, 402, "0 résultat trouvé") : sendJson(res, 200, books);
+    } catch (err) {
+        return sendJson(res, 500, err);
+    }
 }
 
 // Utilsation dans le middleware de vérification lors du create
@@ -170,12 +277,13 @@ exports.addComment = async(req, res) => {
 exports.searchComment = async(req, res) => {
     return new Promise(async(resolve, reject) => {
         try {
-            const comment = await Books.find({ "rating.userId": req.body.userId });
-            console.log("2");
-            if (comment.length < 1) resolve("go on");
-            else reject(res.json("Already commented by this user"));
+            const book = await Books.find({ id: req.params.id }, { "rating.userId": req.body.userId });
+            console.log("2 book", book);
+            // if (book.length < 1) resolve("Go On");
+            // else reject("Already commented by this user");
+            resolve(sendJson(res, 200, book));
         } catch (err) {
-            reject(res.json("Erreur serveur"));
+            reject(sendJson(res, 500, err));
         }
     });
 }
@@ -194,8 +302,10 @@ exports.updateComment = async(req, res) => {
         commentPublicationDate: new Date()
     };
 
+    console.log(rating);
+
     try {
-        const book = await Books.update({ id: req.params.id }, { $pull: { rating: { userId: req.body.userId } } });
+        const book = await Books.update({ id: req.params.id }, { $pull: { rating: { userId: rating.userId } } });
         try {
             const book = await Books.update({ id: req.params.id }, { $addToSet: { rating: { $each: [rating] } } });
             sendJson(res, 200, "Comment updated");
@@ -208,22 +318,32 @@ exports.updateComment = async(req, res) => {
 
 };
 
-// Remove comment
-exports.removeComment = async(req, res) => {
-    // const userId = 3;
-    const userId = req.params.idUser;
+exports.findByCommentIdUser = async(req, res) => {
+    // const errors = validationResult(req);
+    // if (!errors.isEmpty()) {
+    //     return sendJson(res, 422, errors.array());
+    // }
+    // console.log(req.params)
 
     try {
-        const book = await Books.update({ id: req.params.id }, { $pull: { rating: { userId: userId } } });
+        const book = await Books.find({ id: req.params.idBook, 'rating.userId': req.params.commentIdUser });
+        // if (book.length < 1) sendJson(res, 200, "Never commented");
+        sendJson(res, 200, book);
+    } catch (err) {
+        sendJson(res, 500, err);
+    }
+
+};
+
+// Remove comment
+exports.removeComment = async(req, res) => {
+    try {
+        const book = await Books.update({ id: req.params.id }, { $pull: { rating: { userId: req.params.idUser } } });
         sendJson(res, 200, "Comment removed");
     } catch (err) {
         sendJson(res, 500, err);
     }
 };
-
-
-
-
 
 
 
