@@ -283,9 +283,9 @@ exports.login = async(req, res) => {
         const myIp = ip.address();
         console.log('mon ip', myIp);
         // What's my ip 91.161.240.34
-        const ipUser = '91.161.240.34';
-        // const geo = geoip.lookup(myIp);
-        const geo = geoip.lookup(ipUser);
+        // const ipUser = '91.161.240.34';
+        const geo = geoip.lookup(myIp);
+        // const geo = geoip.lookup(ipUser);
         console.log('geo', geo);
 
         const newLog = {
