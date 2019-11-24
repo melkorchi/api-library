@@ -4,7 +4,7 @@
     "description": "",
     "main": "./src/app.js",
     "scripts": {
-	"start": "node src/app.js",
+        "start": "node src/app.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "Mek",
@@ -12,6 +12,7 @@
     "dependencies": {
         "bcrypt": "^3.0.6",
         "body-parser": "^1.19.0",
+        "cors": "^2.8.5",
         "express": "^4.17.1",
         "express-validator": "^6.2.0",
         "ip": "^1.1.5",
