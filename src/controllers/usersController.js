@@ -22,11 +22,11 @@ exports.createUser = async(req, res) => {
                 code: 400,
                 message: "User already exists"
             });
-
+        console.log(user)
         await user.save();
         const token = await user.generateAuthToken();
-
-        // Envoi de mail
+        console.log('token', token)
+            // Envoi de mail
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
