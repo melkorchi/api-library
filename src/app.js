@@ -10,8 +10,11 @@ let app = express();
 let port = process.env.PORT || 8080;
 var cors = require('cors')
 
-// mongoose.connect('mongodb://localhost:27017/library', { useNewUrlParser: true, useUnifiedTopology: true });
-const conn = mongoose.connect(env.bdd.mongo.url, { useNewUrlParser: true, useUnifiedTopology: true });
+const conn = mongoose.connect(env.bdd.mongo.url, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('DB Connected!'))
+    .catch(err => {
+        console.log(Error, err.message);
+    });
 
 // parse application/x-www-form-urlencoded
 // app.use(bodyParser.urlencoded({ extended: false }))
