@@ -26,6 +26,7 @@ exports.createUser = async(req, res) => {
         try {
             console.log('before')
             await user.save();
+            console.log('after')
         } catch (error) {
             console.log('error')
             console.log(error)
