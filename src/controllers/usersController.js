@@ -24,7 +24,7 @@ exports.createUser = (req, res) => {
                 message: "User already exists"
             });
 
-        user.save();
+        // user.save();
 
         // const token = await user.generateAuthToken();
 
