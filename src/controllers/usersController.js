@@ -23,15 +23,18 @@ exports.createUser = async(req, res) => {
             });
 
         let data = {
-            email: email,
-            tokens: []
+            email: email
         };
 
-        data.password = await bcrypt.hash(password, 8);
+        // data.password = await bcrypt.hash(password, 8);
+        let salt = bcrypt.genSaltSync(8);
+        data.password = bcrypt.hashSync(data.password, salt)
 
         // const token = await user.generateAuthToken();
-        const token = jwt.sign({ _id: user._id }, 'MekIbnMek20192020', { expiresIn: '24h' });
-        data.tokens = user.tokens.concat({ token });
+        const token = jwt.sign({ email: data.email }, 'MekIbnMek20192020', { expiresIn: '24h' });
+        data.tokens = [{
+            token: token
+        }]
         console.log('token', token);
 
         // Create
