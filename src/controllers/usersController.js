@@ -17,17 +17,14 @@ exports.createUser = (req, res) => {
         const user = new Users(req.body);
 
         const findUser = Users.findOne({ email });
+        console.log(findUser);
         if (findUser)
             return res.status(400).json({
                 code: 400,
                 message: "User already exists"
             });
 
-        try {
-            user.save();
-        } catch (error) {
-
-        }
+        user.save();
 
         // const token = await user.generateAuthToken();
 
