@@ -40,28 +40,28 @@ exports.createUser = async(req, res) => {
         // Create
         Users.create(data).then(user => {
             // Envoi de mail
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: 'testorIMIE2019@gmail.com',
-                    pass: 'masterimie2019'
-                }
-            });
+            // const transporter = nodemailer.createTransport({
+            //     service: 'gmail',
+            //     auth: {
+            //         user: 'testorIMIE2019@gmail.com',
+            //         pass: 'masterimie2019'
+            //     }
+            // });
 
-            const mailOptions = {
-                from: 'testorIMIE2019@gmail.com',
-                to: 'testorIMIE2019@gmail.com',
-                subject: 'Création de compte chez Library',
-                text: 'Nous vous confirmons la création d\'un compte au niveau de l\'application Library ! \n\n Username: ' + email + '\n\n Password: ' + password
-            };
+            // const mailOptions = {
+            //     from: 'testorIMIE2019@gmail.com',
+            //     to: 'testorIMIE2019@gmail.com',
+            //     subject: 'Création de compte chez Library',
+            //     text: 'Nous vous confirmons la création d\'un compte au niveau de l\'application Library ! \n\n Username: ' + email + '\n\n Password: ' + password
+            // };
 
-            transporter.sendMail(mailOptions, function(error, info) {
-                if (error) {
-                    console.log(error);
-                } else {
-                    console.log('Email sent: ' + info.response);
-                }
-            });
+            // transporter.sendMail(mailOptions, function(error, info) {
+            //     if (error) {
+            //         console.log(error);
+            //     } else {
+            //         console.log('Email sent: ' + info.response);
+            //     }
+            // });
 
             res.status(201).send({
                 code: 201,
