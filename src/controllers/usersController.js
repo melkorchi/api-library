@@ -23,7 +23,13 @@ exports.createUser = async(req, res) => {
                 message: "User already exists"
             });
         console.log('user', user)
-        user.save();
+
+        try {
+            const user = await user.save();
+            sendJson(res, 200, user);
+        } catch (err) {
+            sendJson(res, 500, err)
+        }
 
         console.log('user', user)
         const token = await user.generateAuthToken();
