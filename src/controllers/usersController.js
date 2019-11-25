@@ -10,13 +10,13 @@ const qs = require('qs');
 const moment = require('moment');
 const nodemailer = require('nodemailer');
 
-exports.createUser = async(req, res) => {
+exports.createUser = (req, res) => {
     try {
         const { email, password } = req.body;
         console.log(req.body)
         const user = new Users(req.body);
 
-        const findUser = await Users.findOne({ email });
+        const findUser = Users.findOne({ email });
         if (findUser)
             return res.status(400).json({
                 code: 400,
@@ -24,7 +24,7 @@ exports.createUser = async(req, res) => {
             });
 
         try {
-            await user.save();
+            user.save();
         } catch (error) {
 
         }
