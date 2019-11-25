@@ -78,8 +78,13 @@ UserSchema.methods.generateAuthToken = async function() {
     // const token = jwt.sign({ _id: user._id }, process.env.JWT_KEY);
     user.tokens = user.tokens.concat({ token });
 
-    await user.save()
-    return token
+    try {
+        await user.save();
+        return token;
+    } catch (error) {
+        throw new Error({ error: 'Save token failed' });
+    }
+
 }
 
 UserSchema.statics.sendMail = async(email, password) => {
