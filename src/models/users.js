@@ -1,14 +1,14 @@
 const mongoose = require("mongoose");
-const bcrypt = require("mongoose-bcrypt");
+// const bcrypt = require("mongoose-bcrypt");
+const bcrypt = require('bcryptjs');
+const jwt = require("jsonwebtoken");
 const stringQuery = require("mongoose-string-query");
 const autoIncrement = require('mongoose-auto-increment');
-// const connection = mongoose.createConnection("mongodb://localhost:27017/library");
-const env = require("../environnement");
-const connection = mongoose.createConnection(env.bdd.mongo.url);
+const nodeMailer = require('nodemailer');
+const connection = mongoose.createConnection("mongodb://localhost:27017/library", { useNewUrlParser: true, useUnifiedTopology: true });
 
 autoIncrement.initialize(connection);
 
-// Majuscule
 let UserSchema = new mongoose.Schema({
     email: {
         type: String,
@@ -20,13 +20,12 @@ let UserSchema = new mongoose.Schema({
     password: {
         type: String,
         trim: true,
-        // bcrypt: true,
         require: true
     },
     name: {
         type: String,
         trim: true,
-        require: true
+        require: false
     },
     avatar: {
         type: String,
@@ -37,6 +36,10 @@ let UserSchema = new mongoose.Schema({
     role: {
         type: String,
         default: "ROLE_USER"
+    },
+    isSoftDeleted: {
+        type: Boolean,
+        default: false
     },
     tokens: [{
         token: {
@@ -51,11 +54,6 @@ let UserSchema = new mongoose.Schema({
     }]
 }, { timestamps: true });
 
-// Liason de bcrypt
-// UserSchema.plugin(bcrypt, {
-//     fields: ['password'],
-//     rounds: 10
-// });
 UserSchema.plugin(stringQuery);
 UserSchema.plugin(autoIncrement.plugin, {
     model: 'User',
@@ -64,15 +62,46 @@ UserSchema.plugin(autoIncrement.plugin, {
     incrementBy: 1
 });
 
-// Implémentation d'un middleware mongoose
-// Vérifie si l'utilisateur qui va être crée existe déjà
-UserSchema.pre("save", function(next) {
-    if (!this.isNew) next();
-    else {
-        console.log("Envoi du mail");
-        // Utiliser promesse
-        next();
+UserSchema.pre('save', async function(next) {
+    // Hash the password before saving the user model
+    const user = this
+    if (user.isModified('password')) {
+        user.password = await bcrypt.hash(user.password, 8)
     }
-});
+    next()
+})
 
-module.exports = mongoose.model('Users', UserSchema);
+UserSchema.methods.generateAuthToken = async function() {
+    // Generate an auth token for the user
+    const user = this;
+    const token = jwt.sign({ _id: user._id }, 'MekIbnMek20192020', { expiresIn: '24h' });
+    // const token = jwt.sign({ _id: user._id }, process.env.JWT_KEY);
+    user.tokens = user.tokens.concat({ token });
+
+    await user.save()
+    return token
+}
+
+UserSchema.statics.sendMail = async(email, password) => {
+
+}
+
+UserSchema.statics.findByCredentials = async(email, password) => {
+    const user = await Users.findOne({ email });
+    if (!user) {
+        throw new Error({ error: 'Invalid login credentials' });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(password, user.password)
+
+    if (!isPasswordMatch) {
+        throw new Error({ error: 'Invalid login credentials' });
+    }
+
+    return user;
+}
+
+const Users = mongoose.model('Users', UserSchema)
+
+// module.exports = mongoose.model('Users', UserSchema);
+module.exports = Users;

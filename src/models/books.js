@@ -1,9 +1,7 @@
 // import mongoose, { Schema } from "mongoose";
 const mongoose = require("mongoose");
 const autoIncrement = require('mongoose-auto-increment');
-// const connection = mongoose.createConnection("mongodb://localhost:27017/library");
-const env = require("../environnement");
-const connection = mongoose.createConnection(env.bdd.mongo.url);
+const connection = mongoose.createConnection("mongodb://localhost:27017/library", { useNewUrlParser: true, useUnifiedTopology: true });
 const stringQuery = require("mongoose-string-query");
 
 autoIncrement.initialize(connection);
@@ -61,6 +59,10 @@ let BookSchema = new mongoose.Schema({
     publishedDate: {
         type: Date,
         required: true
+    },
+    urlImage: {
+        type: String,
+        require: false
     },
     rating: [{
         rate: {
