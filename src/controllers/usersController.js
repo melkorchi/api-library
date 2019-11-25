@@ -13,7 +13,7 @@ const nodemailer = require('nodemailer');
 exports.createUser = async(req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(req.body)
+        console.log('req', req.body)
         const user = new Users(req.body);
 
         const findUser = await Users.findOne({ email });
@@ -22,7 +22,7 @@ exports.createUser = async(req, res) => {
                 code: 400,
                 message: "User already exists"
             });
-        console.log(user)
+        console.log('user', user)
         try {
             console.log('before')
             await user.save();
