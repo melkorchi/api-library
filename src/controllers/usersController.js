@@ -23,7 +23,8 @@ exports.createUser = async(req, res) => {
                 message: "User already exists"
             });
         console.log('user', user)
-        await user.save().then(user => {
+
+        user.save().then(user => {
             console.log(user);
         }).catch(err => {
             res.status(500).json(err);
