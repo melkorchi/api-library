@@ -24,11 +24,11 @@ exports.createUser = async(req, res) => {
             });
         console.log('user', user)
 
-        user.save().then(user => {
-            console.log(user);
-        }).catch(err => {
-            res.status(500).json(err);
-        })
+        // user.save().then(user => {
+        //     console.log(user);
+        // }).catch(err => {
+        //     res.status(500).json(err);
+        // })
 
         console.log(user);
         const token = await user.generateAuthToken();
