@@ -13,8 +13,7 @@ const nodemailer = require('nodemailer');
 exports.createUser = async(req, res) => {
     try {
         const { email, password } = req.body;
-        console.log('req', req.body)
-        const user = new Users(req.body);
+        console.log('req', req.body);
 
         const findUser = await Users.findOne({ email });
         if (findUser)
@@ -22,50 +21,57 @@ exports.createUser = async(req, res) => {
                 code: 400,
                 message: "User already exists"
             });
-        console.log('user', user)
 
-        try {
-            const user = await user.save();
-            sendJson(res, 200, user);
-        } catch (err) {
-            sendJson(res, 500, err)
-        }
-
-        console.log('user', user)
-        const token = await user.generateAuthToken();
-        console.log('token', token)
-            // Envoi de mail
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: 'testorIMIE2019@gmail.com',
-                pass: 'masterimie2019'
-            }
-        });
-
-        const mailOptions = {
-            from: 'testorIMIE2019@gmail.com',
-            to: 'testorIMIE2019@gmail.com',
-            subject: 'Création de compte chez Library',
-            text: 'Nous vous confirmons la création d\'un compte au niveau de l\'application Library ! \n\n Username: ' + email + '\n\n Password: ' + password
+        let data = {
+            email: email,
+            tokens: []
         };
 
-        transporter.sendMail(mailOptions, function(error, info) {
-            if (error) {
-                console.log(error);
-            } else {
-                console.log('Email sent: ' + info.response);
-            }
+        data.password = await bcrypt.hash(password, 8);
+
+        // const token = await user.generateAuthToken();
+        const token = jwt.sign({ _id: user._id }, 'MekIbnMek20192020', { expiresIn: '24h' });
+        data.tokens = user.tokens.concat({ token });
+        console.log('token', token);
+
+        // Create
+        Users.create(data).then(user => {
+            // Envoi de mail
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'testorIMIE2019@gmail.com',
+                    pass: 'masterimie2019'
+                }
+            });
+
+            const mailOptions = {
+                from: 'testorIMIE2019@gmail.com',
+                to: 'testorIMIE2019@gmail.com',
+                subject: 'Création de compte chez Library',
+                text: 'Nous vous confirmons la création d\'un compte au niveau de l\'application Library ! \n\n Username: ' + email + '\n\n Password: ' + password
+            };
+
+            transporter.sendMail(mailOptions, function(error, info) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log('Email sent: ' + info.response);
+                }
+            });
+
+            res.status(201).send({
+                code: 201,
+                message: "User created",
+                user,
+                token
+            });
+        }).catch(err => {
+            res.status(500).json(err);
         });
 
-        res.status(201).send({
-            code: 201,
-            message: "User created",
-            user,
-            token
-        });
     } catch (error) {
-        res.status(400).send(error);
+        res.status(500).send(error);
     }
 }
 
