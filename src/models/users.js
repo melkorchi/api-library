@@ -1,11 +1,10 @@
 const mongoose = require("mongoose");
-// const bcrypt = require("mongoose-bcrypt");
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 const stringQuery = require("mongoose-string-query");
 const autoIncrement = require('mongoose-auto-increment');
 const nodeMailer = require('nodemailer');
-const connection = mongoose.createConnection("mongodb://localhost:27017/library", { useNewUrlParser: true, useUnifiedTopology: true });
+const connection = mongoose.createConnection("mongodb://localhost:27017/librarytest", { useNewUrlParser: true, useUnifiedTopology: true });
 
 autoIncrement.initialize(connection);
 
@@ -66,7 +65,7 @@ UserSchema.pre('save', async function(next) {
     // Hash the password before saving the user model
     const user = this
     if (user.isModified('password')) {
-        user.password = await bcrypt.hash(user.password, 8)
+        user.password = await bcrypt.hash(user.password, 8);
     }
     next()
 })
@@ -79,12 +78,10 @@ UserSchema.methods.generateAuthToken = async function() {
     user.tokens = user.tokens.concat({ token });
 
     await user.save()
-    return token
+    return token;
 }
 
-UserSchema.statics.sendMail = async(email, password) => {
-
-}
+UserSchema.statics.sendMail = async(email, password) => {}
 
 UserSchema.statics.findByCredentials = async(email, password) => {
     const user = await Users.findOne({ email });

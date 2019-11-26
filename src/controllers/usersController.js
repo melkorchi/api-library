@@ -14,6 +14,7 @@ exports.createUser = async(req, res) => {
     try {
         const { email, password } = req.body;
         console.log(req.body)
+
         const user = new Users(req.body);
 
         const findUser = await Users.findOne({ email });
@@ -23,10 +24,8 @@ exports.createUser = async(req, res) => {
                 message: "User already exists"
             });
 
-        await user.save();
         const token = await user.generateAuthToken();
 
-        // Envoi de mail
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
@@ -42,22 +41,18 @@ exports.createUser = async(req, res) => {
             text: 'Nous vous confirmons la création d\'un compte au niveau de l\'application Library ! \n\n Username: ' + email + '\n\n Password: ' + password
         };
 
-        transporter.sendMail(mailOptions, function(error, info) {
-            if (error) {
-                console.log(error);
-            } else {
-                console.log('Email sent: ' + info.response);
-            }
+        await transporter.sendMail(mailOptions);
+
+
+        return res.status(200).json({
+            code: 200,
+            message: "User created",
+            user: user,
+            token: token
         });
 
-        res.status(201).send({
-            code: 201,
-            message: "User created",
-            user,
-            token
-        });
     } catch (error) {
-        res.status(400).send(error);
+        return res.status(400).send(error);
     }
 }
 
@@ -92,17 +87,10 @@ exports.mdpForgot = async(req, res) => {
             'If you did not request this, please ignore this email and your password will remain unchanged.\n'
     };
 
-    transporter.sendMail(mailOptions, function(error, info) {
-        if (error) {
-            console.log(error);
-        } else {
-            console.log('Email sent: ' + info.response);
-        }
-    });
+    await transporter.sendMail(mailOptions);
 
     sendJson(res, 200, "Email avec token envoyé");
 
-    // console.log('token', token);
 }
 
 exports.allUsers = async(req, res) => {

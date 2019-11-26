@@ -4,7 +4,8 @@ module.exports = {
     port: process.env.PORT || 3000,
     bdd: {
         mongo: {
-            url: process.env.MONGODB_URI
+            // url: process.env.MONGODB_URI
+            url: "mongodb://localhost/librarytest"
         }
     },
     smtp: {

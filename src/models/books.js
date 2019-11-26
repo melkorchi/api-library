@@ -1,7 +1,7 @@
 // import mongoose, { Schema } from "mongoose";
 const mongoose = require("mongoose");
 const autoIncrement = require('mongoose-auto-increment');
-const connection = mongoose.createConnection("mongodb://localhost:27017/library", { useNewUrlParser: true, useUnifiedTopology: true });
+const connection = mongoose.createConnection("mongodb://localhost:27017/librarytest", { useNewUrlParser: true, useUnifiedTopology: true });
 const stringQuery = require("mongoose-string-query");
 
 autoIncrement.initialize(connection);
@@ -14,41 +14,12 @@ let BookSchema = new mongoose.Schema({
         trim: true,
         required: true,
         index: true
-            // validate: {
-            //     validator: function(val) {
-            //         if (val.length == 2) return false;
-            //         return true;
-            //     },
-            //     msg: "Le titre est trop long !!!"
-            // }
     },
     author: {
         type: String,
         trim: true,
         lowercase: true,
         required: true
-            // validate: {
-            // validator: function(value, isValid) {
-            //     // Update probleme
-            //     const self = this;
-            //     return self.constructor.find({ title: this.title, author: this.author }).exec(
-            //         function(err, book) {
-            //             // if (book) isValid(false);
-            //             // else isValid(true);
-            //             if (err) {
-            //                 throw err;
-            //             } else if (book) {
-            //                 if (self.id === book.id) { // if finding and saving then it's valid even for existing email
-            //                     return isValid(true);
-            //                 }
-            //                 return isValid(false);
-            //             } else {
-            //                 return isValid(true);
-            //             }
-            //         }
-            //     );
-            // }
-            // }
     },
     description: {
         type: String,
