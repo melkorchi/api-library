@@ -32,7 +32,7 @@ exports.createUser = async(req, res) => {
         Users.create(data).then(user => {
             const token = jwt.sign({ email: email }, 'MekIbnMek20192020', { expiresIn: '24h' });
             user.tokens = user.tokens.concat({ token });
-            user.save();
+            // user.save();
             sendJson(res, 200, user)
         }).catch(err => {
             res.status(500).json(err);
