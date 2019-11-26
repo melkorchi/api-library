@@ -26,7 +26,7 @@ exports.createUser = async(req, res) => {
         const user = new Users(req.body);
         const token = jwt.sign({ email: email }, 'MekIbnMek20192020', { expiresIn: '24h' });
         user.tokens = user.tokens.concat({ token });
-        await user.save();
+        await user.save().catch((err) => console.log('caught it'));
 
         // const token = await user.generateAuthToken();
 
