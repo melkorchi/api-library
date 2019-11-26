@@ -10,6 +10,7 @@ const qs = require('qs');
 const moment = require('moment');
 const nodemailer = require('nodemailer');
 
+
 exports.createUser = async(req, res) => {
     try {
         const { email, password } = req.body;
@@ -22,21 +23,10 @@ exports.createUser = async(req, res) => {
                 message: "User already exists"
             });
 
-        const mdpcrypte = await bcrypt.hash(password, 8);
-        let data = {
-            email: email,
-            pasword: mdpcrypte
-        };
-
-        // const user = new Users(req.body);
-        Users.create(data).then(user => {
-            const token = jwt.sign({ email: email }, 'MekIbnMek20192020', { expiresIn: '24h' });
-            user.tokens = user.tokens.concat({ token });
-            // user.save();
-            sendJson(res, 200, user)
-        }).catch(err => {
-            res.status(500).json(err);
-        });
+        const user = new Users(req.body);
+        const token = jwt.sign({ email: email }, 'MekIbnMek20192020', { expiresIn: '24h' });
+        user.tokens = user.tokens.concat({ token });
+        await user.save();
 
         // const token = await user.generateAuthToken();
 
@@ -58,12 +48,11 @@ exports.createUser = async(req, res) => {
         // await transporter.sendMail(mailOptions);
 
 
-        // return res.status(200).json({
-        //     code: 200,
-        //     message: "User created",
-        //     user: user,
-        //     token: token
-        // });
+        return res.status(200).json({
+            message: "User created",
+            user: user,
+            token: token
+        });
 
     } catch (error) {
         return res.status(400).send(error);
