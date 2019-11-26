@@ -22,34 +22,48 @@ exports.createUser = async(req, res) => {
                 message: "User already exists"
             });
 
-        const user = new Users(req.body);
-
-        const token = await user.generateAuthToken();
-
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: 'testorIMIE2019@gmail.com',
-                pass: 'masterimie2019'
-            }
-        });
-
-        const mailOptions = {
-            from: 'testorIMIE2019@gmail.com',
-            to: 'testorIMIE2019@gmail.com',
-            subject: 'Création de compte chez Library',
-            text: 'Nous vous confirmons la création d\'un compte au niveau de l\'application Library ! \n\n Username: ' + email + '\n\n Password: ' + password
+        const mdpcrypte = await bcrypt.hash(password, 8);
+        let data = {
+            email: email,
+            pasword: mdpcrypte
         };
 
-        await transporter.sendMail(mailOptions);
-
-
-        return res.status(200).json({
-            code: 200,
-            message: "User created",
-            user: user,
-            token: token
+        // const user = new Users(req.body);
+        Users.create(data).then(user => {
+            const token = jwt.sign({ email: email }, 'MekIbnMek20192020', { expiresIn: '24h' });
+            user.tokens = user.tokens.concat({ token });
+            user.save();
+            sendJson(res, 200, user)
+        }).catch(err => {
+            res.status(500).json(err);
         });
+
+        // const token = await user.generateAuthToken();
+
+        // const transporter = nodemailer.createTransport({
+        //     service: 'gmail',
+        //     auth: {
+        //         user: 'testorIMIE2019@gmail.com',
+        //         pass: 'masterimie2019'
+        //     }
+        // });
+
+        // const mailOptions = {
+        //     from: 'testorIMIE2019@gmail.com',
+        //     to: 'testorIMIE2019@gmail.com',
+        //     subject: 'Création de compte chez Library',
+        //     text: 'Nous vous confirmons la création d\'un compte au niveau de l\'application Library ! \n\n Username: ' + email + '\n\n Password: ' + password
+        // };
+
+        // await transporter.sendMail(mailOptions);
+
+
+        // return res.status(200).json({
+        //     code: 200,
+        //     message: "User created",
+        //     user: user,
+        //     token: token
+        // });
 
     } catch (error) {
         return res.status(400).send(error);
