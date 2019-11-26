@@ -16,7 +16,7 @@ exports.createUser = async(req, res) => {
         const { email, password } = req.body;
         console.log(req.body)
 
-        const findUser = await Users.findOne({ email });
+        const findUser = await Users.findOne({ email }).catch((err) => console.log('caught it find'));
         if (findUser)
             return res.status(400).json({
                 code: 400,
@@ -24,11 +24,11 @@ exports.createUser = async(req, res) => {
             });
 
         const user = new Users(req.body);
-        const token = jwt.sign({ email: email }, 'MekIbnMek20192020', { expiresIn: '24h' });
-        user.tokens = user.tokens.concat({ token });
-        await user.save().catch((err) => console.log('caught it'));
+        // const token = jwt.sign({ email: email }, 'MekIbnMek20192020', { expiresIn: '24h' });
+        // user.tokens = user.tokens.concat({ token });
+        // await user.save().catch((err) => console.log('caught it save'));
 
-        // const token = await user.generateAuthToken();
+        const token = await user.generateAuthToken().catch((err) => console.log('caught it generateAuthToken'));
 
         // const transporter = nodemailer.createTransport({
         //     service: 'gmail',
